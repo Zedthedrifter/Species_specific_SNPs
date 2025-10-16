@@ -55,12 +55,14 @@ function extract_loci {
 INDIR=$1
 OUTDIR=$2
 NAME=$3
+MIN_FREQ=$4
 
 #./calculate_snp.freq.py specifi_SNPs \
 ./species_specific_allele.py specifi_SNPs \
         -v $INDIR/var.flt2.recode.vcf \
         -n $NAME \
-        -o $OUTDIR #output directory
+        -o $OUTDIR \
+        --min_freq $MIN_FREQ
 
 }
 
@@ -88,15 +90,15 @@ function main {
 #UNIVERSAL VARIABLES
 ENV=snps 
 WORKDIR=$SCRATCH/SNPS/hybrids #the first project: WORKDIR=$SCRATCH/SNPS
-#high=50 #LOWEST FREQUENCY OF THE 'PRESENT' SNP
-#low=0 #HIGHEST FREQEUENCY OF THE 'ABSENT' SNP
-
-
 #CONSTANTS PROVIDED BY USER
 REF=/mnt/shared/projects/rbge/A_projects_Markus/Araucaria/Lib2_mydata_extracted/Araucaria_input-seq_with400Ns_beginend.fas #the fasta file for mapping
 NAME=/mnt/shared/projects/rbge/A_projects_Markus/Araucaria/bamlist_102.csv #SAMPLE BAM & CORRESPONDING SPECIES
-PARENTS='FULL PATH TO THE LIST OF BAMS AS TRAINING SET FOR SPECIES SPECIFIC SNPS'#TRAINING SET FOR SPECIES SPECIFIC SNPS
+#PARENTS='FULL PATH TO THE LIST OF BAMS AS TRAINING SET FOR SPECIES SPECIFIC SNPS'#TRAINING SET FOR SPECIES SPECIFIC SNPS
 SAMPLES=/mnt/shared/scratch/pholling/SNPS/hybrids/results/01_raw_data/hybrids.txt #UNCLASSIFIED SAMPLES
+
+#Parameters
+
+MIN_FREQ=80 #LOWEST FREQUENCY OF THE 'PRESENT' SNP
 
 #End of parameters and paths to adjust#####################################################################################################################################
 
@@ -129,14 +131,14 @@ setup_workdir
 #bam_to_vcf $PARENTS $RESULT1 $REF
 
 #STEP 2: THIS IS FAST AND YOU DON'T EVEN NEED TO SBATCH IT
-#extract_loci $RESULT1 $RESULT2 $NAME 
+extract_loci $RESULT1 $RESULT2 $NAME $MIN_FREQ
 
 #STEP 3: MAKE VCF FILES OF THE QUERIES
 #bam_to_vcf $SAMPLES $RESULT3 $REF
 
 #STEP 4: IDENTIFY SPECIES BASED ON SNPS
 #list of inputs: sample_vcf, output dir, species specific SNPs csv, $high, $low
-species_classifier $RESULT3/var.flt2.recode.vcf $RESULT4 $RESULT2/hq_specific_allele_freq.csv 
+#species_classifier $RESULT3/var.flt2.recode.vcf $RESULT4 $RESULT2/hq_specific_allele_freq.csv 
 
 #LAST STEP
 echo -e "\n\n\n\nDONE RUNNING\n\n\n\n"

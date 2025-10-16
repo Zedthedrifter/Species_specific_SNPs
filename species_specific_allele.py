@@ -50,7 +50,7 @@ def parse_names(names):
   return(id_sp)
 
 #calcualte GT per species
-def species_specific_alleles(id_sp,snps,snps_info,output):
+def species_specific_alleles(id_sp,snps,snps_info,min_freq,output):
   sps=list(set(id_sp.values()))
   sp_nb=len(sps)
   snp_al,snp_GT,ssallele,hqallele,hqalGT={k:{} for k in snps.keys()},{k:{} for k in snps.keys()},{},{},{}
@@ -82,12 +82,18 @@ def species_specific_alleles(id_sp,snps,snps_info,output):
         ssallele[k]['target sp']=target
         ssallele[k]['target allele']=snps_info[k][typ]
         ssallele[k]['target freq%']=freqs[target]
+                
+        #second filter: if the allele is present in all samples of the species:
+        present_in_all=[1 if str(al) in gt else 0 for gt in sp_GT[target]]
+        presence_freq=round(sum(present_in_all)/len(present_in_all)*100,2)
+        ssallele[k]['sample freq%']=presence_freq
+        
+        #
         ssallele[k]={**ssallele[k],**snps_info[k]}
         ssallele[k]={**ssallele[k],**tmp1}
-        
-        #second filter: if the allele is present in all samples of the species:
-        present_in_all=[0 if str(al) in gt else 1 for gt in sp_GT[target]]
-        if sum(present_in_all)==0: #if the allele is found in all samples, homo or hetero
+        #
+        if presence_freq>=int(min_freq): #if the allele is found in at least min_freq% samples
+          #print(presence_freq)
           hqallele[k]=ssallele[k] #add allele freq info
           hqalGT[k]={**ssallele[k],**tmp2} #add GT freq info
           #print(hqallele[k])
@@ -172,11 +178,11 @@ def GT_to_species(alleles,snp_out,output):
 
 #PARENT FUNCTION 1
 #using samples with known species, identify species specific SNPs
-def specifi_SNPs(vcf,names,output):
+def specifi_SNPs(vcf,names,min_freq,output):
   #print(vcf,names,output)
   snps,snps_info,samples=parse_vcf(vcf,output)
   id_sp=parse_names(names)
-  snp_out=species_specific_alleles(id_sp,snps,snps_info,output) #output all species specific snps
+  snp_out=species_specific_alleles(id_sp,snps,snps_info,int(min_freq),output) #output all species specific snps
   print('Complete calling species specific SNPs from training dataset')
 
 #PARENT FUNCTION 2
@@ -206,16 +212,17 @@ def main():
   common_args.add_argument('-v','--vcf', help='vcf file with GT and DP info',metavar='vcf')
   common_args.add_argument('-n','--names', help='sample ID to species names corresponding file, csv: sample ID/file path, species',metavar='names')
   common_args.add_argument('-o','--output',help='path to output directory',metavar='output')
+  common_args.add_argument('--min_freq', help='minimum allele presence frequency in samples',metavar='min_freq')
   
   #find species specific SNPs
-  func_parser=subparsers.add_parser('specifi_SNPs', parents=[common_args],help='find and output species specific SNPs', 
-                                    usage = './calculate_snp.freq.py main_parent -v <vcf file> -n <ID_species.txt> -o <output_dir/prefix> ')
-  func_parser.set_defaults(func=specifi_SNPs)
+  specifi_SNPs_parser=subparsers.add_parser('specifi_SNPs', parents=[common_args],help='find and output species specific SNPs', 
+                                    usage = './calculate_snp.freq.py main_parent -v <vcf file> -n <ID_species.txt> -min_freq <minimum allele presence frequency in samples%> -o <output_dir/prefix> ')
+  specifi_SNPs_parser.set_defaults(func=specifi_SNPs)
   
   #assign species to unclassified samples based on SNPs
-  func_parser=subparsers.add_parser('find_species', parents=[common_args],help='find and output hits on identified species specific SNPs', 
+  find_species_parser=subparsers.add_parser('find_species', parents=[common_args],help='find and output hits on identified species specific SNPs', 
                                     usage = './calculate_snp.freq.py find_species -v <vcf file> -n <species specific SNPs.csv> -o <output_dir/prefix> ')
-  func_parser.set_defaults(func=find_species)
+  find_species_parser.set_defaults(func=find_species)
   
   #parse arguments
   args = parser.parse_args()
@@ -224,10 +231,10 @@ def main():
     parser.print_help()
     sys.exit(1)
   
-  # Prepare common kwargs for the function call
-  kwargs = {'vcf': args.vcf,
-            'names': args.names,
-            'output':args.output}
+  # Prepare common kwargs for the function call by filtering out 'None' ones
+  kwargs = {k: v for k, v in vars(args).items() 
+              if k in ['vcf', 'names', 'output','min_freq'] and v is not None}
+    
   
   # Call the appropriate function
   args.func(**kwargs)
