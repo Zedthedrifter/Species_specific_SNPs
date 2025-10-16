@@ -55,8 +55,6 @@ function extract_loci {
 INDIR=$1
 OUTDIR=$2
 NAME=$3
-high=$4
-low=$5
 
 #./calculate_snp.freq.py specifi_SNPs \
 ./species_specific_allele.py specifi_SNPs \
@@ -73,8 +71,6 @@ function species_classifier {
 VCF=$1
 OUTDIR=$2
 PARENT_SNP=$3
-high=$4
-low=$5
 
 #./calculate_snp.freq.py find_species \
 ./species_specific_allele.py find_species \
@@ -133,14 +129,14 @@ setup_workdir
 #bam_to_vcf $PARENTS $RESULT1 $REF
 
 #STEP 2: THIS IS FAST AND YOU DON'T EVEN NEED TO SBATCH IT
-extract_loci $RESULT1 $RESULT2 $NAME 
+#extract_loci $RESULT1 $RESULT2 $NAME 
 
 #STEP 3: MAKE VCF FILES OF THE QUERIES
 #bam_to_vcf $SAMPLES $RESULT3 $REF
 
 #STEP 4: IDENTIFY SPECIES BASED ON SNPS
 #list of inputs: sample_vcf, output dir, species specific SNPs csv, $high, $low
-#species_classifier $RESULT3/var.flt2.recode.vcf $RESULT4 $RESULT2/hq_specific_allele_freq.csv $high $low
+species_classifier $RESULT3/var.flt2.recode.vcf $RESULT4 $RESULT2/hq_specific_allele_freq.csv 
 }
 
 main

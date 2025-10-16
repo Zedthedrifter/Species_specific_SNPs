@@ -74,6 +74,7 @@ def species_specific_alleles(id_sp,snps,snps_info,output):
     for al,typ in {0:'REF',1:'ALT'}.items(): #assume two alleles
       freqs={sp:snp_al[k][sp].get(al,0) for sp in snp_al[k]}
       present=[1 for f in freqs.values() if f > 0 ]
+      #first filter: if the allele is present in only one species:
       if sum(present)==1 : #the allele is present in only one species
         #get the species:
         target=[s for s,f in freqs.items() if f >0][0]
@@ -84,7 +85,7 @@ def species_specific_alleles(id_sp,snps,snps_info,output):
         ssallele[k]={**ssallele[k],**snps_info[k]}
         ssallele[k]={**ssallele[k],**tmp1}
         
-        #second filter: if the allele is present in all samples of the subspecies:
+        #second filter: if the allele is present in all samples of the species:
         present_in_all=[0 if str(al) in gt else 1 for gt in sp_GT[target]]
         if sum(present_in_all)==0: #if the allele is found in all samples, homo or hetero
           hqallele[k]=ssallele[k] #add allele freq info
