@@ -209,12 +209,12 @@ def main():
   
   #find species specific SNPs
   func_parser=subparsers.add_parser('specifi_SNPs', parents=[common_args],help='find and output species specific SNPs', 
-                                    usage = './calculate_snp.freq.py main_parent -v <vcf file> -n <ID_species.txt> -i <high bound> -l <low bound> -o <output_dir/prefix> ')
+                                    usage = './calculate_snp.freq.py main_parent -v <vcf file> -n <ID_species.txt> -o <output_dir/prefix> ')
   func_parser.set_defaults(func=specifi_SNPs)
   
   #assign species to unclassified samples based on SNPs
   func_parser=subparsers.add_parser('find_species', parents=[common_args],help='find and output hits on identified species specific SNPs', 
-                                    usage = './calculate_snp.freq.py find_species -v <vcf file> -n <species specific SNPs.csv> -i <high bound> -l <low bound> -o <output_dir/prefix> ')
+                                    usage = './calculate_snp.freq.py find_species -v <vcf file> -n <species specific SNPs.csv> -o <output_dir/prefix> ')
   func_parser.set_defaults(func=find_species)
   
   #parse arguments
@@ -228,15 +228,6 @@ def main():
   kwargs = {'vcf': args.vcf,
             'names': args.names,
             'output':args.output}
-  
-  # Add function-specific arguments
-  #if args.command == 'rename_fqgz':
-  #  kwargs['prefix'] = args.prefix
-  #elif args.command == 'rename_fasta':
-  #  kwargs['outfile'] = args.outfile
-  #elif args.command == 'rename_contig':
-  #  kwargs['infile'] = args.infile
-  #  kwargs['fcsv'] = args.fcsv
   
   # Call the appropriate function
   args.func(**kwargs)
