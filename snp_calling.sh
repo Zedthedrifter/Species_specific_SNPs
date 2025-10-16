@@ -137,6 +137,9 @@ setup_workdir
 #STEP 4: IDENTIFY SPECIES BASED ON SNPS
 #list of inputs: sample_vcf, output dir, species specific SNPs csv, $high, $low
 species_classifier $RESULT3/var.flt2.recode.vcf $RESULT4 $RESULT2/hq_specific_allele_freq.csv 
+
+#LAST STEP
+echo -e "\n\n\n\nDONE RUNNING\n\n\n\n"
 }
 
 main
