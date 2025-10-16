@@ -177,6 +177,7 @@ def specifi_SNPs(vcf,names,output):
   snps,snps_info,samples=parse_vcf(vcf,output)
   id_sp=parse_names(names)
   snp_out=species_specific_alleles(id_sp,snps,snps_info,output) #output all species specific snps
+  print('Complete calling species specific SNPs from training dataset')
 
 #PARENT FUNCTION 2
 #for samples without known species, find species/potential parents of hybrids based on species specific SNPs
@@ -191,6 +192,7 @@ def find_species(vcf,names,output):
   snps,snps_info=extract_SNPs(snps,snps_info,snp_out)
   GTs,alleles=specific_SNPs_GT(samples,snps,snps_info,snp_out,output)
   species=GT_to_species(alleles,snp_out,output)
+  print('Complete calling species specific SNPs from query dataset and detecting parental strains')
 
 #now making the execution function  
 def main():
